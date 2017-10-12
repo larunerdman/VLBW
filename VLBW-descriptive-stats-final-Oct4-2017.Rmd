@@ -1,0 +1,1091 @@
+---
+title: "VLBW Descriptive Statistics"
+author: "Lauren Erdman"
+date: "September 22, 2017"
+output:
+  pdf_document: default
+  html_document:
+    fig_height: 10
+    fig_width: 10
+---
+
+```{r,include=FALSE}
+library(ggplot2)
+library(reshape2)
+library(gridExtra)
+library(tsne)
+```
+
+```{r,include=FALSE}
+###Functions used below
+transform.stat <- function(stat.df, stat = c("n","Mean","Std.Dev","Median","Min","Max")){
+  require('reshape2')
+  mltd.df <- melt(stat.df)
+  names(mltd.df) <- c('Day.of.Life','Variable.Name',stat)
+  return(mltd.df)
+}
+
+```
+
+```{r,include=FALSE}
+###Set working directory
+
+## Lab computer
+#setwd("C:/Users/Lauren/Desktop/OConner collab/VLBW collab/"")
+
+## Laptop
+setwd("C:/Users/Owner/Desktop/Goldenberg Lab/OConnor collab/VLBW collab/")
+```
+
+```{r,echo=FALSE}
+###Reading in data
+dat <- read.csv("C:/Users/Owner/Desktop/Goldenberg Lab/OConnor collab/data/GTA-DoMINO_LongitudinalData.csv",header=TRUE,as.is=TRUE)
+# head(dat)
+# View(dat)
+```
+
+# DESCRIPTIVE VARIABLES 
+###Sex
+#### Counts and proportions
+```{r,echo = FALSE}
+df.of.int <- dat[!duplicated(dat$SubjtID),]
+descrp.tbl <- rbind(round(table(df.of.int$Sex)[names(table(df.of.int$Sex)) != ""],digits = -1),
+                    round(table(df.of.int$Sex)[names(table(df.of.int$Sex)) != ""]/sum(table(df.of.int$Sex)[names(table(df.of.int$Sex)) != ""]),digits = 2))
+rownames(descrp.tbl) <- c("n","%")
+descrp.tbl
+```
+
+#### Barplot
+```{r,echo = FALSE}
+barplot(round(table(df.of.int$Sex)[names(table(df.of.int$Sex)) != ""]/sum(table(df.of.int$Sex)[names(table(df.of.int$Sex)) != ""]),digits = 2),
+        col = "dodgerblue",ylab = "Share of sample",xlab = "Sex")
+```
+
+###Site
+#### Unique values -- all children recruited from Toronto
+```{r,echo = FALSE}
+unique(na.omit(dat$Site)) 
+
+```
+
+###Gestational Age
+#### Summary statistics
+```{r,echo = FALSE}
+df.of.int <- dat[!duplicated(dat$SubjtID),]
+
+summary(df.of.int$GA)
+
+```
+
+#### Density plot
+```{r,echo = FALSE}
+ggplot(df.of.int,aes(GA))+geom_density(fill="deeppink3") + xlab("Gestational age at birth (weeks)") + theme_bw()
+
+```
+
+###Length of Hospital Stay (days)
+#### Summary statistics
+```{r,echo = FALSE}
+df.of.int <- dat[!duplicated(dat$SubjtID),]
+
+summary(df.of.int$LOHS)
+
+```
+
+#### Density plot
+```{r,echo = FALSE}
+ggplot(df.of.int,aes(LOHS))+geom_density(fill="darkorchid") + xlab("Length of Hospital Stay (days)") + theme_bw()
+
+```
+
+###Days in Feeding Intervention
+#### Summary statistics
+```{r,echo = FALSE}
+df.of.int <- dat[!duplicated(dat$SubjtID),]
+summary(df.of.int$DaysinFeedInt)
+```
+
+#### Density plot
+```{r,echo = FALSE}
+ggplot(df.of.int,aes(DaysinFeedInt))+geom_density(fill="seagreen") + xlab("Days in Feeding Intervention") + theme_bw()
+
+```
+
+###Multiple Births
+#### Summary statistics
+```{r,echo = FALSE}
+df.of.int <- dat[!duplicated(dat$SubjtID),]
+table(factor(df.of.int$MultiB,levels = c(1,2,3),labels = c("Single","Twins","Triplets")))
+
+descrp.tbl <- rbind(round(table(factor(df.of.int$MultiB,levels = c(1,2,3),labels = c("Single","Twins","Triplets"))),digits = -1),
+                    round(table(factor(df.of.int$MultiB,levels = c(1,2,3),labels = c("Single","Twins","Triplets")))/sum(table(factor(df.of.int$MultiB,levels = c(1,2,3),labels = c("Single","Twins","Triplets")))),digits = 2))
+rownames(descrp.tbl) <- c("n","%")
+descrp.tbl
+```
+
+#### Barplot
+```{r,echo = FALSE}
+barplot(table(factor(df.of.int$MultiB,levels = c(1,2,3),labels = c("Single","Twins","Triplets")))/sum(table(factor(df.of.int$MultiB,levels = c(1,2,3),labels = c("Single","Twins","Triplets")))),
+        col = "darkred",ylab = "Share of sample",xlab = "Multiple Births?")
+```
+
+###Percentage of total enteral feeds as mother's milk
+#### Summary statistics
+```{r,echo = FALSE}
+df.of.int <- dat[!duplicated(dat$SubjtID),]
+summary(df.of.int$PercentEBM)
+```
+
+#### Density plot
+```{r,echo = FALSE}
+ggplot(df.of.int,aes(PercentEBM))+geom_density(fill="royalblue4") + xlab("Percentage of total enteral feeds as mother's milk") + theme_bw()
+```
+
+###Percentage of total enteral feeds as donor milk
+#### Summary statistics
+```{r,echo = FALSE}
+df.of.int <- dat[!duplicated(dat$SubjtID),]
+summary(df.of.int$PercentDM)
+```
+
+#### Density plot
+```{r,echo = FALSE}
+ggplot(df.of.int,aes(PercentDM))+geom_density(fill="magenta4") + xlab("Percentage of total enteral feeds as donor milk") + theme_bw()
+```
+
+###Percentage of total enteral feeds as preterm formula
+#### Summary statistics
+```{r,echo = FALSE}
+df.of.int <- dat[!duplicated(dat$SubjtID),]
+summary(df.of.int$PercentForm)
+```
+
+#### Density plot
+```{r,echo = FALSE}
+ggplot(df.of.int,aes(PercentForm))+geom_density(fill="darkorange2") + xlab("Percentage of total enteral feeds as preterm formula") + theme_bw()
+```
+
+###C-Section
+#### Counts and proportions
+```{r,echo = FALSE}
+df.of.int <- dat[!duplicated(dat$SubjtID),]
+descrp.tbl <- rbind(round(table(df.of.int$CS)[names(table(df.of.int$CS)) != ""],digits = -1),
+                    round(table(df.of.int$CS)[names(table(df.of.int$CS)) != ""]/sum(table(df.of.int$CS)[names(table(df.of.int$CS)) != ""]),digits = 2))
+rownames(descrp.tbl) <- c("n","%")
+descrp.tbl
+```
+
+#### Barplot
+```{r,echo = FALSE}
+barplot(round(table(df.of.int$CS)[names(table(df.of.int$CS)) != ""]/sum(table(df.of.int$CS)[names(table(df.of.int$CS)) != ""]),digits = 2),
+        col = "dodgerblue",ylab = "Share of sample",xlab = "Sex")
+```
+
+###Days of Life
+####Summary statistics
+```{r,echo = FALSE}
+summary(dat$DOL)
+```
+
+#### Barplot
+```{r,echo = FALSE}
+in.df <- data.frame(cbind(table(dat$DOL),names(table(dat$DOL))))
+names(in.df) <- c("Count","Var")
+in.df$Var <- factor(as.numeric(as.character(in.df$Var)),levels = unique(as.numeric(as.character(unique(in.df$Var))))[order(as.numeric(as.character(unique(in.df$Var))))])
+in.df$Count <- as.numeric(as.character(in.df$Count))
+
+ggplot(in.df,aes(x = Var,y = Count)) + geom_bar(stat = "identity") + xlab(label = "Days of Life")
+```
+
+# NUTRITION VARIABLES 
+```{r,echo=FALSE}
+nut.vars <- c("TotalPro","TotalLipid","TotalCarb","TotalEnergy")
+nut.labels <- c("Daily protein intake from both parenteral and enteral sources (g/kg/d)","Daily lipid intake from both parenteral and enteral sources (g/kg/d)","Daily carbohydrate intake from both parenteral and enteral sources (g/kg/d)","Daily energy intake from both parenteral and enteral sources (kcal/kg/d)")
+
+df.of.int <- dat[,c("DOL",nut.vars)]
+df.of.int$DOL <- as.numeric(as.character(df.of.int$DOL))
+
+df.of.int2 <- dat[,c("SubjtID","DOL",nut.vars)]
+df.of.int2$DOL <- as.numeric(as.character(df.of.int2$DOL))
+
+n <- t(sapply(1:max(df.of.int[,"DOL"]),function(x){apply(df.of.int[df.of.int[,"DOL"] == x,nut.vars],2,function(y){length(na.omit(y))})}))
+means <- t(sapply(1:max(df.of.int[,"DOL"]),function(x){apply(df.of.int[df.of.int[,"DOL"] == x,nut.vars],2,function(y){mean(na.omit(y))})}))
+sds <- t(sapply(1:max(df.of.int[,"DOL"]),function(x){apply(df.of.int[df.of.int[,"DOL"] == x,nut.vars],2,function(y){sd(na.omit(y))})}))
+medians <- t(sapply(1:max(df.of.int[,"DOL"]),function(x){apply(df.of.int[df.of.int[,"DOL"] == x,nut.vars],2,function(y){median(na.omit(y))})}))
+mins <- t(sapply(1:max(df.of.int[,"DOL"]),function(x){apply(df.of.int[df.of.int[,"DOL"] == x,nut.vars],2,function(y){min(na.omit(y))})}))
+maxs <- t(sapply(1:max(df.of.int[,"DOL"]),function(x){apply(df.of.int[df.of.int[,"DOL"] == x,nut.vars],2,function(y){max(na.omit(y))})}))
+
+stat.list <- list(n,means,sds,medians,mins,maxs)
+names(stat.list) <- c("n","Mean","Std.Dev","Median","Min","Max")
+
+transformed.stat.list <- list()
+for(i in 1:length(stat.list)){
+  transformed.stat.list[[i]] <- transform.stat(stat.df = stat.list[[i]],stat = names(stat.list)[i])
+}
+
+merged.stat.list <- Reduce(f = function(x,y){merge(x,y,by=c('Day.of.Life','Variable.Name'))},x = transformed.stat.list)    
+merged.stat.list.ordered <- merged.stat.list[order(merged.stat.list$Variable.Name,merged.stat.list$Day.of.Life),]
+merged.stat.list.ordered$Variable.Label <- nut.labels[match(merged.stat.list.ordered$Variable.Name,nut.vars)]
+merged.stat.list.ordered <- merged.stat.list.ordered[,c("Variable.Label","Variable.Name","Day.of.Life","n","Mean","Median","Std.Dev","Min","Max")]
+
+# head(merged.stat.list.ordered)
+# unique(merged.stat.list.ordered$Variable.Label)
+
+```
+
+###Daily protein intake from both parenteral and enteral sources (in g/kg/d)
+####Summary Stats
+```{r,echo=FALSE}
+df.of.int <- merged.stat.list.ordered[merged.stat.list.ordered$Variable.Label == "Daily protein intake from both parenteral and enteral sources (g/kg/d)",]
+var.name = "TotalPro"
+
+summary(dat[,var.name])
+```
+
+#### Missingness heatmap
+```{r,echo=FALSE}
+dol.miss.df <- data.frame(matrix(nrow=length(unique(dat$SubjtID)),ncol=max(dat$DOL)))
+rownames(dol.miss.df) <- unique(dat$SubjtID)
+names(dol.miss.df) <- 1:max(dat$DOL)
+for(i in 1:max(dat$DOL)){
+  dol.df <- dat[dat$DOL == i,c("SubjtID",var.name)]
+  dol.miss.df[rownames(dol.miss.df) %in% dol.df$SubjtID,i] <- 1
+  dol.miss.df[!(rownames(dol.miss.df) %in% dol.df$SubjtID),i] <- 0
+}
+
+dol.miss.mlt.df <- melt(dol.miss.df)
+dol.miss.mlt.df <- data.frame(cbind(dol.miss.mlt.df,rep(rownames(dol.miss.df),max(dat$DOL))))
+# head(dol.miss.mlt.df)
+names(dol.miss.mlt.df)[3] <- "SubjtID"
+(full.hm <- ggplot(data = dol.miss.mlt.df,aes(x = variable,y = SubjtID)) + geom_tile(aes(fill = value)) + xlab("Day of Life") + ylab("Subject ID"))
+```
+
+#### n plot
+```{r,echo=FALSE}
+barplot(apply(dol.miss.df,2,sum),xlab="Days of Life",ylab="n samples",col='darkorchid4')
+```
+
+#### Mean plot 
+```{r,echo=FALSE}
+plot(1, type="n", ylab=paste0(unique(df.of.int$Variable.Label)), xlab="Day of Life", xlim=c(0, max(df.of.int$Day.of.Life)), ylim=c(min(df.of.int$Mean - 1.96*df.of.int$Std.Dev/df.of.int$n), max(df.of.int$Mean + 1.96*df.of.int$Std.Dev/df.of.int$n)),main="Mean +/- 95% CI")
+# plot the data and the fitted line
+lines(y = df.of.int$Mean, x = df.of.int$Day.of.Life,lwd=2,col='blue')
+# now the confidence bands
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Mean + 1.96*df.of.int$Std.Dev/df.of.int$n, lty = "dotted",lwd=2,col='dodgerblue')
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Mean - 1.96*df.of.int$Std.Dev/df.of.int$n, lty = "dotted",lwd=2,col='dodgerblue')
+```
+
+#### Median plot 
+```{r,echo=FALSE}
+plot(1, type="n", ylab=paste0(unique(df.of.int$Variable.Label)), xlab="Day of Life", xlim=c(0, max(df.of.int$Day.of.Life)), ylim=c(1.2*min(df.of.int$Min), 1.2*max(df.of.int$Max)),main="Median (Min,Max)",cex=4)
+# plot the data and the fitted line
+lines(y = df.of.int$Median, x = df.of.int$Day.of.Life,lwd=2,col='blue')
+# now the confidence bands
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Max, lty = "dotted",lwd=2,col='dodgerblue')
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Min, lty = "dotted",lwd=2,col='dodgerblue')
+```
+
+#### Spaghetti plot
+```{r,echo=FALSE}
+plot(1, type="n", xlab="Age (days)", ylab=unique(df.of.int$Variable.Label), xlim=c(0, max(na.omit(dat$DOL))), ylim=c(min(na.omit(as.numeric(as.character(dat[,var.name])))), max(na.omit(as.numeric(as.character(dat[,var.name]))))))
+k = 1
+for(id in unique(dat$SubjtID)){
+  mini.df <- dat[dat$SubjtID == id,]
+  lines(x = mini.df$DOL,y = mini.df[,var.name],col = c("blue"))
+  k = k + 1
+}
+```
+
+###Daily lipid intake from both parenteral and enteral sources (in g/kg/d)
+####Summary Stats
+```{r,echo=FALSE}
+df.of.int <- merged.stat.list.ordered[merged.stat.list.ordered$Variable.Label == "Daily lipid intake from both parenteral and enteral sources (g/kg/d)",]
+var.name = "TotalLipid"
+
+summary(dat[,var.name])
+```
+
+#### Missingness heatmap
+```{r,echo=FALSE}
+dol.miss.df <- data.frame(matrix(nrow=length(unique(dat$SubjtID)),ncol=max(dat$DOL)))
+rownames(dol.miss.df) <- unique(dat$SubjtID)
+names(dol.miss.df) <- 1:max(dat$DOL)
+for(i in 1:max(dat$DOL)){
+  dol.df <- dat[dat$DOL == i,c("SubjtID",var.name)]
+  dol.miss.df[rownames(dol.miss.df) %in% dol.df$SubjtID,i] <- 1
+  dol.miss.df[!(rownames(dol.miss.df) %in% dol.df$SubjtID),i] <- 0
+}
+
+dol.miss.mlt.df <- melt(dol.miss.df)
+dol.miss.mlt.df <- data.frame(cbind(dol.miss.mlt.df,rep(rownames(dol.miss.df),max(dat$DOL))))
+# head(dol.miss.mlt.df)
+names(dol.miss.mlt.df)[3] <- "SubjtID"
+(full.hm <- ggplot(data = dol.miss.mlt.df,aes(x = variable,y = SubjtID)) + geom_tile(aes(fill = value)) + xlab("Day of Life") + ylab("Subject ID"))
+```
+
+#### n plot
+```{r,echo=FALSE}
+barplot(apply(dol.miss.df,2,sum),xlab="Days of Life",ylab="n samples",col='darkorchid4')
+```
+
+#### Mean plot 
+```{r,echo=FALSE}
+plot(1, type="n", ylab=paste0(unique(df.of.int$Variable.Label)), xlab="Day of Life", xlim=c(0, max(df.of.int$Day.of.Life)), ylim=c(min(df.of.int$Mean - 1.96*df.of.int$Std.Dev/df.of.int$n), max(df.of.int$Mean + 1.96*df.of.int$Std.Dev/df.of.int$n)),main="Mean +/- 95% CI")
+# plot the data and the fitted line
+lines(y = df.of.int$Mean, x = df.of.int$Day.of.Life,lwd=2,col='blue')
+# now the confidence bands
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Mean + 1.96*df.of.int$Std.Dev/df.of.int$n, lty = "dotted",lwd=2,col='dodgerblue')
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Mean - 1.96*df.of.int$Std.Dev/df.of.int$n, lty = "dotted",lwd=2,col='dodgerblue')
+```
+
+#### Median plot 
+```{r,echo=FALSE}
+plot(1, type="n", ylab=paste0(unique(df.of.int$Variable.Label)), xlab="Day of Life", xlim=c(0, max(df.of.int$Day.of.Life)), ylim=c(1.2*min(df.of.int$Min), 1.2*max(df.of.int$Max)),main="Median (Min,Max)",cex=4)
+# plot the data and the fitted line
+lines(y = df.of.int$Median, x = df.of.int$Day.of.Life,lwd=2,col='blue')
+# now the confidence bands
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Max, lty = "dotted",lwd=2,col='dodgerblue')
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Min, lty = "dotted",lwd=2,col='dodgerblue')
+```
+
+#### Spaghetti plot
+```{r,echo=FALSE}
+plot(1, type="n", xlab="Age (days)", ylab=unique(df.of.int$Variable.Label), xlim=c(0, max(na.omit(dat$DOL))), ylim=c(min(na.omit(as.numeric(as.character(dat[,var.name])))), max(na.omit(as.numeric(as.character(dat[,var.name]))))))
+k = 1
+for(id in unique(dat$SubjtID)){
+  mini.df <- dat[dat$SubjtID == id,]
+  lines(x = mini.df$DOL,y = mini.df[,var.name],col = c("blue"))
+  k = k + 1
+}
+```
+
+###Daily carbohydrate intake from both parenteral and enteral sources (in g/kg/d)
+####Summary Stats
+```{r,echo=FALSE}
+df.of.int <- merged.stat.list.ordered[merged.stat.list.ordered$Variable.Label == "Daily carbohydrate intake from both parenteral and enteral sources (g/kg/d)",]
+var.name = "TotalCarb"
+
+summary(dat[,var.name])
+```
+
+#### Missingness heatmap
+```{r,echo=FALSE}
+dol.miss.df <- data.frame(matrix(nrow=length(unique(dat$SubjtID)),ncol=max(dat$DOL)))
+rownames(dol.miss.df) <- unique(dat$SubjtID)
+names(dol.miss.df) <- 1:max(dat$DOL)
+for(i in 1:max(dat$DOL)){
+  dol.df <- dat[dat$DOL == i,c("SubjtID",var.name)]
+  dol.miss.df[rownames(dol.miss.df) %in% dol.df$SubjtID,i] <- 1
+  dol.miss.df[!(rownames(dol.miss.df) %in% dol.df$SubjtID),i] <- 0
+}
+
+dol.miss.mlt.df <- melt(dol.miss.df)
+dol.miss.mlt.df <- data.frame(cbind(dol.miss.mlt.df,rep(rownames(dol.miss.df),max(dat$DOL))))
+# head(dol.miss.mlt.df)
+names(dol.miss.mlt.df)[3] <- "SubjtID"
+(full.hm <- ggplot(data = dol.miss.mlt.df,aes(x = variable,y = SubjtID)) + geom_tile(aes(fill = value)) + xlab("Day of Life") + ylab("Subject ID"))
+```
+
+#### n plot
+```{r,echo=FALSE}
+barplot(apply(dol.miss.df,2,sum),xlab="Days of Life",ylab="n samples",col='darkorchid4')
+```
+
+#### Mean plot 
+```{r,echo=FALSE}
+plot(1, type="n", ylab=paste0(unique(df.of.int$Variable.Label)), xlab="Day of Life", xlim=c(0, max(df.of.int$Day.of.Life)), ylim=c(min(df.of.int$Mean - 1.96*df.of.int$Std.Dev/df.of.int$n), max(df.of.int$Mean + 1.96*df.of.int$Std.Dev/df.of.int$n)),main="Mean +/- 95% CI")
+# plot the data and the fitted line
+lines(y = df.of.int$Mean, x = df.of.int$Day.of.Life,lwd=2,col='blue')
+# now the confidence bands
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Mean + 1.96*df.of.int$Std.Dev/df.of.int$n, lty = "dotted",lwd=2,col='dodgerblue')
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Mean - 1.96*df.of.int$Std.Dev/df.of.int$n, lty = "dotted",lwd=2,col='dodgerblue')
+```
+
+#### Median plot 
+```{r,echo=FALSE}
+plot(1, type="n", ylab=paste0(unique(df.of.int$Variable.Label)), xlab="Day of Life", xlim=c(0, max(df.of.int$Day.of.Life)), ylim=c(1.2*min(df.of.int$Min), 1.2*max(df.of.int$Max)),main="Median (Min,Max)",cex=4)
+# plot the data and the fitted line
+lines(y = df.of.int$Median, x = df.of.int$Day.of.Life,lwd=2,col='blue')
+# now the confidence bands
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Max, lty = "dotted",lwd=2,col='dodgerblue')
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Min, lty = "dotted",lwd=2,col='dodgerblue')
+```
+
+#### Spaghetti plot
+```{r,echo=FALSE}
+plot(1, type="n", xlab="Age (days)", ylab=unique(df.of.int$Variable.Label), xlim=c(0, max(na.omit(dat$DOL))), ylim=c(min(na.omit(as.numeric(as.character(dat[,var.name])))), max(na.omit(as.numeric(as.character(dat[,var.name]))))))
+k = 1
+for(id in unique(dat$SubjtID)){
+  mini.df <- dat[dat$SubjtID == id,]
+  lines(x = mini.df$DOL,y = mini.df[,var.name],col = c("blue"))
+  k = k + 1
+}
+```
+
+###Daily energy intake from both parenteral and enteral sources (in kcal/kg/d)
+####Summary stats
+```{r,echo=FALSE}
+df.of.int <- merged.stat.list.ordered[merged.stat.list.ordered$Variable.Label == "Daily energy intake from both parenteral and enteral sources (kcal/kg/d)",]
+var.name = "TotalEnergy"
+
+summary(dat[,var.name])
+```
+
+#### Missingness heatmap
+```{r,echo=FALSE}
+dol.miss.df <- data.frame(matrix(nrow=length(unique(dat$SubjtID)),ncol=max(dat$DOL)))
+rownames(dol.miss.df) <- unique(dat$SubjtID)
+names(dol.miss.df) <- 1:max(dat$DOL)
+for(i in 1:max(dat$DOL)){
+  dol.df <- dat[dat$DOL == i,c("SubjtID",var.name)]
+  dol.miss.df[rownames(dol.miss.df) %in% dol.df$SubjtID,i] <- 1
+  dol.miss.df[!(rownames(dol.miss.df) %in% dol.df$SubjtID),i] <- 0
+}
+
+dol.miss.mlt.df <- melt(dol.miss.df)
+dol.miss.mlt.df <- data.frame(cbind(dol.miss.mlt.df,rep(rownames(dol.miss.df),max(dat$DOL))))
+names(dol.miss.mlt.df)[3] <- "SubjtID"
+(full.hm <- ggplot(data = dol.miss.mlt.df,aes(x = variable,y = SubjtID)) + geom_tile(aes(fill = value)) + xlab("Day of Life") + ylab("Subject ID"))
+```
+
+#### n plot
+```{r,echo=FALSE}
+barplot(apply(dol.miss.df,2,sum),xlab="Days of Life",ylab="n samples",col='darkorchid4')
+```
+
+#### Mean plot 
+```{r,echo=FALSE}
+plot(1, type="n", ylab=paste0(unique(df.of.int$Variable.Label)), xlab="Day of Life", xlim=c(0, max(df.of.int$Day.of.Life)), ylim=c(min(df.of.int$Mean - 1.96*df.of.int$Std.Dev/df.of.int$n), max(df.of.int$Mean + 1.96*df.of.int$Std.Dev/df.of.int$n)),main="Mean +/- 95% CI")
+# plot the data and the fitted line
+lines(y = df.of.int$Mean, x = df.of.int$Day.of.Life,lwd=2,col='blue')
+# now the confidence bands
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Mean + 1.96*df.of.int$Std.Dev/df.of.int$n, lty = "dotted",lwd=2,col='dodgerblue')
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Mean - 1.96*df.of.int$Std.Dev/df.of.int$n, lty = "dotted",lwd=2,col='dodgerblue')
+```
+
+#### Median plot 
+```{r,echo=FALSE}
+plot(1, type="n", ylab=paste0(unique(df.of.int$Variable.Label)), xlab="Day of Life", xlim=c(0, max(df.of.int$Day.of.Life)), ylim=c(1.2*min(df.of.int$Min), 1.2*max(df.of.int$Max)),main="Median (Min,Max)",cex=4)
+# plot the data and the fitted line
+lines(y = df.of.int$Median, x = df.of.int$Day.of.Life,lwd=2,col='blue')
+# now the confidence bands
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Max, lty = "dotted",lwd=2,col='dodgerblue')
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Min, lty = "dotted",lwd=2,col='dodgerblue')
+```
+
+#### Spaghetti plot
+```{r,echo=FALSE}
+
+plot(1, type="n", xlab="Age (days)", ylab=unique(df.of.int$Variable.Label), xlim=c(0, max(na.omit(dat$DOL))), ylim=c(min(na.omit(as.numeric(as.character(dat[,var.name])))), max(na.omit(as.numeric(as.character(dat[,var.name]))))))
+k = 1
+for(id in unique(dat$SubjtID)){
+  mini.df <- dat[dat$SubjtID == id,]
+  lines(x = mini.df$DOL,y = mini.df[,var.name],col = c("blue"))
+  k = k + 1
+}
+# dev.off()
+```
+
+# GROWTH VARIABLES 
+```{r,include=FALSE}
+nut.vars <- c("Wt_Raw","Lt_Raw","HC_Raw","Wt_Int","Lt_Int","HC_Int")
+nut.labels <- c("Raw weight measurements (grams)","Raw length measurements (cm)","Raw head circumference measurements (cm)","Linearly interpolated weight measurements (grams)","Linearly interpolated length measurements (cm)","Linearly interpolated head circumference measurements (cm)")
+
+df.of.int <- dat[,c("DOL",nut.vars)]
+df.of.int$DOL <- as.numeric(as.character(df.of.int$DOL))
+
+df.of.int2 <- dat[,c("SubjtID","DOL",nut.vars)]
+df.of.int2$DOL <- as.numeric(as.character(df.of.int2$DOL))
+
+n <- t(sapply(1:max(df.of.int[,"DOL"]),function(x){apply(df.of.int[df.of.int[,"DOL"] == x,nut.vars],2,function(y){length(na.omit(y))})}))
+means <- t(sapply(1:max(df.of.int[,"DOL"]),function(x){apply(df.of.int[df.of.int[,"DOL"] == x,nut.vars],2,function(y){mean(na.omit(y))})}))
+sds <- t(sapply(1:max(df.of.int[,"DOL"]),function(x){apply(df.of.int[df.of.int[,"DOL"] == x,nut.vars],2,function(y){sd(na.omit(y))})}))
+medians <- t(sapply(1:max(df.of.int[,"DOL"]),function(x){apply(df.of.int[df.of.int[,"DOL"] == x,nut.vars],2,function(y){median(na.omit(y))})}))
+mins <- t(sapply(1:max(df.of.int[,"DOL"]),function(x){apply(df.of.int[df.of.int[,"DOL"] == x,nut.vars],2,function(y){min(na.omit(y))})}))
+maxs <- t(sapply(1:max(df.of.int[,"DOL"]),function(x){apply(df.of.int[df.of.int[,"DOL"] == x,nut.vars],2,function(y){max(na.omit(y))})}))
+
+stat.list <- list(n,means,sds,medians,mins,maxs)
+names(stat.list) <- c("n","Mean","Std.Dev","Median","Min","Max")
+
+transformed.stat.list <- list()
+for(i in 1:length(stat.list)){
+  transformed.stat.list[[i]] <- transform.stat(stat.df = stat.list[[i]],stat = names(stat.list)[i])
+}
+
+merged.stat.list <- Reduce(f = function(x,y){merge(x,y,by=c('Day.of.Life','Variable.Name'))},x = transformed.stat.list)    
+merged.stat.list.ordered <- merged.stat.list[order(merged.stat.list$Variable.Name,merged.stat.list$Day.of.Life),]
+merged.stat.list.ordered$Variable.Label <- nut.labels[match(merged.stat.list.ordered$Variable.Name,nut.vars)]
+merged.stat.list.ordered <- merged.stat.list.ordered[,c("Variable.Label","Variable.Name","Day.of.Life","n","Mean","Median","Std.Dev","Min","Max")]
+
+# head(merged.stat.list.ordered)
+# unique(merged.stat.list.ordered$Variable.Label)
+
+```
+
+###Raw weight measurements (grams)
+####Summary Stats
+```{r,echo=FALSE}
+df.of.int <- merged.stat.list.ordered[merged.stat.list.ordered$Variable.Label == "Raw weight measurements (grams)",]
+var.name = "Wt_Raw"
+
+summary(dat[,var.name])
+```
+
+#### Missingness heatmap
+```{r,echo=FALSE}
+dol.miss.df <- data.frame(matrix(nrow=length(unique(dat$SubjtID)),ncol=max(dat$DOL)))
+rownames(dol.miss.df) <- unique(dat$SubjtID)
+names(dol.miss.df) <- 1:max(dat$DOL)
+for(i in 1:max(dat$DOL)){
+  dol.df <- dat[dat$DOL == i,c("SubjtID",var.name)]
+  dol.miss.df[rownames(dol.miss.df) %in% dol.df$SubjtID,i] <- 1
+  dol.miss.df[!(rownames(dol.miss.df) %in% dol.df$SubjtID),i] <- 0
+}
+
+dol.miss.mlt.df <- melt(dol.miss.df)
+dol.miss.mlt.df <- data.frame(cbind(dol.miss.mlt.df,rep(rownames(dol.miss.df),max(dat$DOL))))
+# head(dol.miss.mlt.df)
+names(dol.miss.mlt.df)[3] <- "SubjtID"
+(full.hm <- ggplot(data = dol.miss.mlt.df,aes(x = variable,y = SubjtID)) + geom_tile(aes(fill = value)) + xlab("Day of Life") + ylab("Subject ID"))
+```
+
+#### n plot
+```{r,echo=FALSE}
+barplot(apply(dol.miss.df,2,sum),xlab="Days of Life",ylab="n samples",col='darkorchid4')
+```
+
+#### Mean plot 
+```{r,echo=FALSE}
+plot(1, type="n", ylab=paste0(unique(df.of.int$Variable.Label)), xlab="Day of Life", xlim=c(0, max(df.of.int$Day.of.Life)), ylim=c(min(df.of.int$Mean - 1.96*df.of.int$Std.Dev/df.of.int$n), max(df.of.int$Mean + 1.96*df.of.int$Std.Dev/df.of.int$n)),main="Mean +/- 95% CI")
+# plot the data and the fitted line
+lines(y = df.of.int$Mean, x = df.of.int$Day.of.Life,lwd=2,col='blue')
+# now the confidence bands
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Mean + 1.96*df.of.int$Std.Dev/df.of.int$n, lty = "dotted",lwd=2,col='dodgerblue')
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Mean - 1.96*df.of.int$Std.Dev/df.of.int$n, lty = "dotted",lwd=2,col='dodgerblue')
+```
+
+#### Median plot 
+```{r,echo=FALSE}
+plot(1, type="n", ylab=paste0(unique(df.of.int$Variable.Label)), xlab="Day of Life", xlim=c(0, max(df.of.int$Day.of.Life)), ylim=c(1.2*min(df.of.int$Min), 1.2*max(df.of.int$Max)),main="Median (Min,Max)",cex=4)
+# plot the data and the fitted line
+lines(y = df.of.int$Median, x = df.of.int$Day.of.Life,lwd=2,col='blue')
+# now the confidence bands
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Max, lty = "dotted",lwd=2,col='dodgerblue')
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Min, lty = "dotted",lwd=2,col='dodgerblue')
+```
+
+#### Spaghetti plot
+```{r,echo=FALSE}
+plot(1, type="n", xlab="Age (days)", ylab=unique(df.of.int$Variable.Label), xlim=c(0, max(na.omit(dat$DOL))), ylim=c(min(na.omit(as.numeric(as.character(dat[,var.name])))), max(na.omit(as.numeric(as.character(dat[,var.name]))))))
+k = 1
+for(id in unique(dat$SubjtID)){
+  mini.df <- dat[dat$SubjtID == id,]
+  lines(x = mini.df$DOL,y = mini.df[,var.name],col = c("blue"))
+  k = k + 1
+}
+```
+
+###Raw length measurements (cm)
+```{r,echo=FALSE}
+df.of.int <- merged.stat.list.ordered[merged.stat.list.ordered$Variable.Label == "Raw length measurements (cm)",]
+var.name = "Lt_Raw"
+
+summary(dat[,var.name])
+```
+
+#### Missingness heatmap
+```{r,echo=FALSE}
+dol.miss.df <- data.frame(matrix(nrow=length(unique(dat$SubjtID)),ncol=max(dat$DOL)))
+rownames(dol.miss.df) <- unique(dat$SubjtID)
+names(dol.miss.df) <- 1:max(dat$DOL)
+for(i in 1:max(dat$DOL)){
+  dol.df <- dat[dat$DOL == i,c("SubjtID",var.name)]
+  dol.miss.df[rownames(dol.miss.df) %in% dol.df$SubjtID,i] <- 1
+  dol.miss.df[!(rownames(dol.miss.df) %in% dol.df$SubjtID),i] <- 0
+}
+
+dol.miss.mlt.df <- melt(dol.miss.df)
+dol.miss.mlt.df <- data.frame(cbind(dol.miss.mlt.df,rep(rownames(dol.miss.df),max(dat$DOL))))
+# head(dol.miss.mlt.df)
+names(dol.miss.mlt.df)[3] <- "SubjtID"
+(full.hm <- ggplot(data = dol.miss.mlt.df,aes(x = variable,y = SubjtID)) + geom_tile(aes(fill = value)) + xlab("Day of Life") + ylab("Subject ID"))
+```
+
+#### n plot
+```{r,echo=FALSE}
+barplot(apply(dol.miss.df,2,sum),xlab="Days of Life",ylab="n samples",col='darkorchid4')
+```
+
+#### Mean plot 
+```{r,echo=FALSE}
+plot(1, type="n", ylab=paste0(unique(df.of.int$Variable.Label)), xlab="Day of Life", xlim=c(0, max(df.of.int$Day.of.Life)), ylim=c(min(na.omit(df.of.int$Mean - 1.96*df.of.int$Std.Dev/df.of.int$n)), max(na.omit(df.of.int$Mean + 1.96*df.of.int$Std.Dev/df.of.int$n))),main="Mean +/- 95% CI")
+# plot the data and the fitted line
+lines(y = df.of.int$Mean, x = df.of.int$Day.of.Life,lwd=2,col='blue')
+# now the confidence bands
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Mean + 1.96*df.of.int$Std.Dev/df.of.int$n, lty = "dotted",lwd=2,col='dodgerblue')
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Mean - 1.96*df.of.int$Std.Dev/df.of.int$n, lty = "dotted",lwd=2,col='dodgerblue')
+```
+
+#### Median plot 
+```{r,echo=FALSE}
+plot(1, type="n", ylab=paste0(unique(df.of.int$Variable.Label)), xlab="Day of Life", xlim=c(0, max(df.of.int$Day.of.Life)), ylim=c(1.2*min(df.of.int$Min), 1.2*max(df.of.int$Max)),main="Median (Min,Max)",cex=4)
+# plot the data and the fitted line
+lines(y = df.of.int$Median, x = df.of.int$Day.of.Life,lwd=2,col='blue')
+# now the confidence bands
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Max, lty = "dotted",lwd=2,col='dodgerblue')
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Min, lty = "dotted",lwd=2,col='dodgerblue')
+```
+
+#### Spaghetti plot
+```{r,echo=FALSE}
+plot(1, type="n", xlab="Age (days)", ylab=unique(df.of.int$Variable.Label), xlim=c(0, max(na.omit(dat$DOL))), ylim=c(min(na.omit(as.numeric(as.character(dat[,var.name])))), max(na.omit(as.numeric(as.character(dat[,var.name]))))))
+k = 1
+for(id in unique(dat$SubjtID)){
+  mini.df <- dat[dat$SubjtID == id,]
+  lines(x = mini.df$DOL,y = mini.df[,var.name],col = c("blue"))
+  k = k + 1
+}
+```
+
+###Raw head circumference measurements (cm)
+####Summary stats
+```{r,echo=FALSE}
+df.of.int <- merged.stat.list.ordered[merged.stat.list.ordered$Variable.Label == "Raw head circumference measurements (cm)",]
+var.name = "HC_Raw"
+
+summary(dat[,var.name])
+```
+
+#### Missingness heatmap
+```{r,echo=FALSE}
+dol.miss.df <- data.frame(matrix(nrow=length(unique(dat$SubjtID)),ncol=max(dat$DOL)))
+rownames(dol.miss.df) <- unique(dat$SubjtID)
+names(dol.miss.df) <- 1:max(dat$DOL)
+for(i in 1:max(dat$DOL)){
+  dol.df <- dat[dat$DOL == i,c("SubjtID",var.name)]
+  dol.miss.df[rownames(dol.miss.df) %in% dol.df$SubjtID,i] <- 1
+  dol.miss.df[!(rownames(dol.miss.df) %in% dol.df$SubjtID),i] <- 0
+}
+
+dol.miss.mlt.df <- melt(dol.miss.df)
+dol.miss.mlt.df <- data.frame(cbind(dol.miss.mlt.df,rep(rownames(dol.miss.df),max(dat$DOL))))
+# head(dol.miss.mlt.df)
+names(dol.miss.mlt.df)[3] <- "SubjtID"
+(full.hm <- ggplot(data = dol.miss.mlt.df,aes(x = variable,y = SubjtID)) + geom_tile(aes(fill = value)) + xlab("Day of Life") + ylab("Subject ID"))
+```
+
+#### n plot
+```{r,echo=FALSE}
+barplot(apply(dol.miss.df,2,sum),xlab="Days of Life",ylab="n samples",col='darkorchid4')
+```
+
+#### Mean plot 
+```{r,echo=FALSE}
+plot(1, type="n", ylab=paste0(unique(df.of.int$Variable.Label)), xlab="Day of Life", xlim=c(0, max(df.of.int$Day.of.Life)), ylim=c(min(na.omit(df.of.int$Mean - 1.96*df.of.int$Std.Dev/df.of.int$n)), max(na.omit(df.of.int$Mean + 1.96*df.of.int$Std.Dev/df.of.int$n))),main="Mean +/- 95% CI")
+# plot the data and the fitted line
+lines(y = df.of.int$Mean, x = df.of.int$Day.of.Life,lwd=2,col='blue')
+# now the confidence bands
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Mean + 1.96*df.of.int$Std.Dev/df.of.int$n, lty = "dotted",lwd=2,col='dodgerblue')
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Mean - 1.96*df.of.int$Std.Dev/df.of.int$n, lty = "dotted",lwd=2,col='dodgerblue')
+```
+
+#### Median plot 
+```{r,echo=FALSE}
+plot(1, type="n", ylab=paste0(unique(df.of.int$Variable.Label)), xlab="Day of Life", xlim=c(0, max(df.of.int$Day.of.Life)), ylim=c(1.2*min(df.of.int$Min), 1.2*max(df.of.int$Max)),main="Median (Min,Max)",cex=4)
+# plot the data and the fitted line
+lines(y = df.of.int$Median, x = df.of.int$Day.of.Life,lwd=2,col='blue')
+# now the confidence bands
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Max, lty = "dotted",lwd=2,col='dodgerblue')
+lines(x = df.of.int$Day.of.Life, y = df.of.int$Min, lty = "dotted",lwd=2,col='dodgerblue')
+```
+
+#### Spaghetti plot
+```{r,echo=FALSE}
+plot(1, type="n", xlab="Age (days)", ylab=unique(df.of.int$Variable.Label), xlim=c(0, max(na.omit(dat$DOL))), ylim=c(min(na.omit(as.numeric(as.character(dat[,var.name])))), max(na.omit(as.numeric(as.character(dat[,var.name]))))))
+k = 1
+for(id in unique(dat$SubjtID)){
+  mini.df <- dat[dat$SubjtID == id,]
+  lines(x = mini.df$DOL,y = mini.df[,var.name],col = c("blue"))
+  k = k + 1
+}
+```
+
+# MORBIDITY VARIABLES 
+```{r,echo=FALSE}
+nut.vars <- c("LOS","CLD","RespSupp","BrainInjury","PDA","SGA","DaysFullEnt","DaysonPN","ROP","SNAP")
+nut.labels <- c("Late Onset Sepsis","Chronic Lung Disease","Respiratory support;1=mechanical ventilation, 2=continuous positive airway pressure, 3=supplemental oxygen, 4=room air","Brain Injury","Patent ductus arteriosus","Small for gestational age","Number of days it took the infant to achieve full enteral feeding","Number of days the infant received parenteral nutrition","Severe retinopathy of prematurity","Score for Neonatal Acute Physiology II")
+
+# dynamic.barplot.vars <- c("LOS","CLD","RespSupp","BrainInjury","PDA","SGA")
+# dynamic.barplot.labels <- c("Late Onset Sepsis","Chronic Lung Disease","Respiratory support;1=mechanical ventilation, 2=continuous positive airway pressure, 3=supplemental oxygen, 4=room air","Brain Injury","Patent ductus arteriosus","Small for gestational age")
+# 
+# static.barplot.vars <- c("DOL","DaysFullEnt","DaysonPN","DaysinFeedInt","Site","MultiB","ROP","CS","SNAP","Sex")
+# static.barplot.numeric.cat <- c(TRUE,TRUE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE)
+# static.barplot.labels <- c("Days of Life","Number of days it took the infant to achieve full enteral feeding","Number of days the infant received parenteral nutrition","Number of days in the feeding intervention","Site the infant was recruited from","Multiple births;1=single, 2=twins, 3=triplets, 4=quadruplets","Severe retinopathy of prematurity","C-section","Score for Neonatal Acute Physiology II","Sex")
+
+df.of.int <- dat[,c("DOL",nut.vars)]
+df.of.int$DOL <- as.numeric(as.character(df.of.int$DOL))
+
+df.of.int2 <- dat[,c("SubjtID","DOL",nut.vars)]
+df.of.int2$DOL <- as.numeric(as.character(df.of.int2$DOL))
+
+n <- t(sapply(1:max(df.of.int[,"DOL"]),function(x){apply(df.of.int[df.of.int[,"DOL"] == x,nut.vars],2,function(y){length(na.omit(y))})}))
+
+stat.list <- list(n)
+names(stat.list) <- c("n")
+
+merged.stat.list <- melt(stat.list)
+names(merged.stat.list) <- c('Day.of.Life','Variable.Name','n')
+
+merged.stat.list.ordered <- merged.stat.list[order(merged.stat.list$Variable.Name,merged.stat.list$Day.of.Life),]
+merged.stat.list.ordered$Variable.Label <- nut.labels[match(merged.stat.list.ordered$Variable.Name,nut.vars)]
+merged.stat.list.ordered <- merged.stat.list.ordered[,c("Variable.Label","Variable.Name","Day.of.Life","n")]
+
+# head(merged.stat.list.ordered)
+# unique(merged.stat.list.ordered$Variable.Label)
+
+```
+
+###Late Onset Sepsis
+```{r,echo=FALSE}
+var.name = "LOS"
+var.label = "Late Onset Sepsis"
+# summary(dat[,var.name])
+```
+
+####n samples
+```{r,echo=FALSE}
+barplot.n.table <- merged.stat.list.ordered$n[merged.stat.list.ordered$Variable.Label == "Late Onset Sepsis"]
+names(barplot.n.table) <- merged.stat.list.ordered$Day.of.Life[merged.stat.list.ordered$Variable.Label == "Late Onset Sepsis"]
+
+barplot(barplot.n.table,xlab="Days of Life",ylab="n samples",col='darkorchid4')
+```
+
+####dynamic barplot
+```{r,echo=FALSE}
+df <- data.frame(apply(dat,2,function(x)trimws(x,"both")))
+df.of.int <- df[,var.name]
+
+tbl = round(table(df.of.int)/sum(table(df.of.int)),digits = 2)
+
+dyn.barplot.df <- data.frame(matrix(ncol=4,nrow=0))
+names(dyn.barplot.df) <- c("Var","DOL","Value","Count")
+
+k=1
+dol.tbls <- t(unlist(sapply(1:max(as.numeric(df$DOL)),function(j)table(df[df$DOL == j,var.name]))))
+dol.tbls <- dol.tbls[,colnames(dol.tbls) != ""]
+
+var.dol.df <- data.frame(matrix(ncol = 4,nrow=0))
+names(var.dol.df) <- c("Var","DOL","Value","Count")
+for(j in 1:ncol(dol.tbls)){
+  mydf <- data.frame(cbind(var.label,1:nrow(dol.tbls),rep(colnames(dol.tbls)[j],nrow(dol.tbls)),dol.tbls[,j]))
+  names(mydf) <- c("Var","DOL","Value","Count")
+  var.dol.df <- rbind(var.dol.df,mydf)
+}
+dyn.barplot.df <- rbind(dyn.barplot.df,var.dol.df)
+var.dol.df$Count <- as.numeric(as.character(var.dol.df$Count))
+var.dol.df$DOL  <- factor(var.dol.df$DOL,levels = unique(var.dol.df$DOL)[order(as.numeric(as.character(unique(var.dol.df$DOL))))])
+(myplot <- ggplot(data = var.dol.df,aes(x = DOL,y = Count)) + geom_bar(stat = "identity", aes(fill = Value)) + ggtitle(label = gsub(x = var.label,pattern = ";",replacement = "\n")))
+
+```
+
+###Chronic Lung Disease
+```{r,echo=FALSE}
+var.name = "CLD"
+var.label = "Chronic Lung Disease"
+# summary(dat[,var.name])
+```
+
+####n samples
+```{r,echo=FALSE}
+barplot.n.table <- merged.stat.list.ordered$n[merged.stat.list.ordered$Variable.Label == var.label]
+names(barplot.n.table) <- merged.stat.list.ordered$Day.of.Life[merged.stat.list.ordered$Variable.Label == var.label]
+
+barplot(barplot.n.table,xlab="Days of Life",ylab="n samples",col='darkorchid4')
+```
+
+####dynamic barplot
+```{r,echo=FALSE}
+df <- data.frame(apply(dat,2,function(x)trimws(x,"both")))
+df.of.int <- df[,var.name]
+
+tbl = round(table(df.of.int)/sum(table(df.of.int)),digits = 2)
+
+dyn.barplot.df <- data.frame(matrix(ncol=4,nrow=0))
+names(dyn.barplot.df) <- c("Var","DOL","Value","Count")
+
+k=1
+dol.tbls <- t(unlist(sapply(1:max(as.numeric(df$DOL)),function(j)table(df[df$DOL == j,var.name]))))
+dol.tbls <- dol.tbls[,colnames(dol.tbls) != ""]
+
+var.dol.df <- data.frame(matrix(ncol = 4,nrow=0))
+names(var.dol.df) <- c("Var","DOL","Value","Count")
+for(j in 1:ncol(dol.tbls)){
+  mydf <- data.frame(cbind(var.label,1:nrow(dol.tbls),rep(colnames(dol.tbls)[j],nrow(dol.tbls)),dol.tbls[,j]))
+  names(mydf) <- c("Var","DOL","Value","Count")
+  var.dol.df <- rbind(var.dol.df,mydf)
+}
+dyn.barplot.df <- rbind(dyn.barplot.df,var.dol.df)
+var.dol.df$Count <- as.numeric(as.character(var.dol.df$Count))
+var.dol.df$DOL  <- factor(var.dol.df$DOL,levels = unique(var.dol.df$DOL)[order(as.numeric(as.character(unique(var.dol.df$DOL))))])
+(myplot <- ggplot(data = var.dol.df,aes(x = DOL,y = Count)) + geom_bar(stat = "identity", aes(fill = Value)) + ggtitle(label = gsub(x = var.label,pattern = ";",replacement = "\n")))
+
+```
+
+###Respiratory support;1=mechanical ventilation, 2=continuous positive airway pressure, 3=supplemental oxygen, 4=room air
+```{r,echo=FALSE}
+var.name = "RespSupp"
+var.label = "Respiratory support;1=mechanical ventilation, 2=continuous positive airway pressure, 3=supplemental oxygen, 4=room air"
+# summary(dat[,var.name])
+```
+
+####n samples
+```{r,echo=FALSE}
+barplot.n.table <- merged.stat.list.ordered$n[merged.stat.list.ordered$Variable.Label == var.label]
+names(barplot.n.table) <- merged.stat.list.ordered$Day.of.Life[merged.stat.list.ordered$Variable.Label == var.label]
+
+barplot(barplot.n.table,xlab="Days of Life",ylab="n samples",col='darkorchid4')
+```
+
+####dynamic barplot
+```{r,echo=FALSE}
+df <- data.frame(apply(dat,2,function(x)trimws(x,"both")))
+df.of.int <- df[,var.name]
+
+tbl = round(table(df.of.int)/sum(table(df.of.int)),digits = 2)
+
+dyn.barplot.df <- data.frame(matrix(ncol=4,nrow=0))
+names(dyn.barplot.df) <- c("Var","DOL","Value","Count")
+
+k=1
+dol.tbls <- t(unlist(sapply(1:max(as.numeric(df$DOL)),function(j)table(df[df$DOL == j,var.name]))))
+dol.tbls <- dol.tbls[,colnames(dol.tbls) != ""]
+
+var.dol.df <- data.frame(matrix(ncol = 4,nrow=0))
+names(var.dol.df) <- c("Var","DOL","Value","Count")
+for(j in 1:ncol(dol.tbls)){
+  mydf <- data.frame(cbind(var.label,1:nrow(dol.tbls),rep(colnames(dol.tbls)[j],nrow(dol.tbls)),dol.tbls[,j]))
+  names(mydf) <- c("Var","DOL","Value","Count")
+  var.dol.df <- rbind(var.dol.df,mydf)
+}
+dyn.barplot.df <- rbind(dyn.barplot.df,var.dol.df)
+var.dol.df$Count <- as.numeric(as.character(var.dol.df$Count))
+var.dol.df$DOL  <- factor(var.dol.df$DOL,levels = unique(var.dol.df$DOL)[order(as.numeric(as.character(unique(var.dol.df$DOL))))])
+(myplot <- ggplot(data = var.dol.df,aes(x = DOL,y = Count)) + geom_bar(stat = "identity", aes(fill = Value)) + ggtitle(label = gsub(x = var.label,pattern = ";",replacement = "\n")))
+
+```
+
+###Brain Injury
+```{r,echo=FALSE}
+var.name = "BrainInjury"
+var.label = "Brain Injury"
+# summary(dat[,var.name])
+```
+
+####n samples
+```{r,echo=FALSE}
+barplot.n.table <- merged.stat.list.ordered$n[merged.stat.list.ordered$Variable.Label == var.label]
+names(barplot.n.table) <- merged.stat.list.ordered$Day.of.Life[merged.stat.list.ordered$Variable.Label == var.label]
+
+barplot(barplot.n.table,xlab="Days of Life",ylab="n samples",col='darkorchid4')
+```
+
+####dynamic barplot
+```{r,echo=FALSE}
+df <- data.frame(apply(dat,2,function(x)trimws(x,"both")))
+df.of.int <- df[,var.name]
+
+tbl = round(table(df.of.int)/sum(table(df.of.int)),digits = 2)
+
+dyn.barplot.df <- data.frame(matrix(ncol=4,nrow=0))
+names(dyn.barplot.df) <- c("Var","DOL","Value","Count")
+
+k=1
+dol.tbls <- t(unlist(sapply(1:max(as.numeric(df$DOL)),function(j)table(df[df$DOL == j,var.name]))))
+dol.tbls <- dol.tbls[,colnames(dol.tbls) != ""]
+
+var.dol.df <- data.frame(matrix(ncol = 4,nrow=0))
+names(var.dol.df) <- c("Var","DOL","Value","Count")
+for(j in 1:ncol(dol.tbls)){
+  mydf <- data.frame(cbind(var.label,1:nrow(dol.tbls),rep(colnames(dol.tbls)[j],nrow(dol.tbls)),dol.tbls[,j]))
+  names(mydf) <- c("Var","DOL","Value","Count")
+  var.dol.df <- rbind(var.dol.df,mydf)
+}
+dyn.barplot.df <- rbind(dyn.barplot.df,var.dol.df)
+var.dol.df$Count <- as.numeric(as.character(var.dol.df$Count))
+var.dol.df$DOL  <- factor(var.dol.df$DOL,levels = unique(var.dol.df$DOL)[order(as.numeric(as.character(unique(var.dol.df$DOL))))])
+(myplot <- ggplot(data = var.dol.df,aes(x = DOL,y = Count)) + geom_bar(stat = "identity", aes(fill = Value)) + ggtitle(label = gsub(x = var.label,pattern = ";",replacement = "\n")))
+
+```
+
+###Patent ductus arteriosus
+```{r,echo=FALSE}
+var.name = "PDA"
+var.label = "Patent ductus arteriosus"
+# summary(dat[,var.name])
+```
+
+####n samples
+```{r,echo=FALSE}
+barplot.n.table <- merged.stat.list.ordered$n[merged.stat.list.ordered$Variable.Label == var.label]
+names(barplot.n.table) <- merged.stat.list.ordered$Day.of.Life[merged.stat.list.ordered$Variable.Label == var.label]
+
+barplot(barplot.n.table,xlab="Days of Life",ylab="n samples",col='darkorchid4')
+```
+
+####dynamic barplot
+```{r,echo=FALSE}
+df <- data.frame(apply(dat,2,function(x)trimws(x,"both")))
+df.of.int <- df[,var.name]
+
+tbl = round(table(df.of.int)/sum(table(df.of.int)),digits = 2)
+
+dyn.barplot.df <- data.frame(matrix(ncol=4,nrow=0))
+names(dyn.barplot.df) <- c("Var","DOL","Value","Count")
+
+k=1
+dol.tbls <- t(unlist(sapply(1:max(as.numeric(df$DOL)),function(j)table(df[df$DOL == j,var.name]))))
+dol.tbls <- dol.tbls[,colnames(dol.tbls) != ""]
+
+var.dol.df <- data.frame(matrix(ncol = 4,nrow=0))
+names(var.dol.df) <- c("Var","DOL","Value","Count")
+for(j in 1:ncol(dol.tbls)){
+  mydf <- data.frame(cbind(var.label,1:nrow(dol.tbls),rep(colnames(dol.tbls)[j],nrow(dol.tbls)),dol.tbls[,j]))
+  names(mydf) <- c("Var","DOL","Value","Count")
+  var.dol.df <- rbind(var.dol.df,mydf)
+}
+dyn.barplot.df <- rbind(dyn.barplot.df,var.dol.df)
+var.dol.df$Count <- as.numeric(as.character(var.dol.df$Count))
+var.dol.df$DOL  <- factor(var.dol.df$DOL,levels = unique(var.dol.df$DOL)[order(as.numeric(as.character(unique(var.dol.df$DOL))))])
+(myplot <- ggplot(data = var.dol.df,aes(x = DOL,y = Count)) + geom_bar(stat = "identity", aes(fill = Value)) + ggtitle(label = gsub(x = var.label,pattern = ";",replacement = "\n")))
+
+```
+
+###Small for gestational age
+```{r,echo=FALSE}
+var.name = "SGA"
+var.label = "Small for gestational age"
+# summary(dat[,var.name])
+```
+
+####n samples
+```{r,echo=FALSE}
+barplot.n.table <- merged.stat.list.ordered$n[merged.stat.list.ordered$Variable.Label == var.label]
+names(barplot.n.table) <- merged.stat.list.ordered$Day.of.Life[merged.stat.list.ordered$Variable.Label == var.label]
+
+barplot(barplot.n.table,xlab="Days of Life",ylab="n samples",col='darkorchid4')
+```
+
+####dynamic barplot
+```{r,echo=FALSE}
+df <- data.frame(apply(dat,2,function(x)trimws(x,"both")))
+df.of.int <- df[,var.name]
+
+tbl = round(table(df.of.int)/sum(table(df.of.int)),digits = 2)
+
+dyn.barplot.df <- data.frame(matrix(ncol=4,nrow=0))
+names(dyn.barplot.df) <- c("Var","DOL","Value","Count")
+
+k=1
+dol.tbls <- t(unlist(sapply(1:max(as.numeric(df$DOL)),function(j)table(df[df$DOL == j,var.name]))))
+dol.tbls <- dol.tbls[,colnames(dol.tbls) != ""]
+
+var.dol.df <- data.frame(matrix(ncol = 4,nrow=0))
+names(var.dol.df) <- c("Var","DOL","Value","Count")
+for(j in 1:ncol(dol.tbls)){
+  mydf <- data.frame(cbind(var.label,1:nrow(dol.tbls),rep(colnames(dol.tbls)[j],nrow(dol.tbls)),dol.tbls[,j]))
+  names(mydf) <- c("Var","DOL","Value","Count")
+  var.dol.df <- rbind(var.dol.df,mydf)
+}
+dyn.barplot.df <- rbind(dyn.barplot.df,var.dol.df)
+var.dol.df$Count <- as.numeric(as.character(var.dol.df$Count))
+var.dol.df$DOL  <- factor(var.dol.df$DOL,levels = unique(var.dol.df$DOL)[order(as.numeric(as.character(unique(var.dol.df$DOL))))])
+(myplot <- ggplot(data = var.dol.df,aes(x = DOL,y = Count)) + geom_bar(stat = "identity", aes(fill = Value)) + ggtitle(label = gsub(x = var.label,pattern = ";",replacement = "\n")))
+
+```
+
+###Number of days it took the infant to achieve full enteral feeding
+#### Summary statistics
+```{r,echo = FALSE}
+df.of.int <- dat[!duplicated(dat$SubjtID),]
+
+summary(df.of.int$DaysFullEnt)
+
+```
+
+#### Density plot
+```{r,echo = FALSE}
+ggplot(df.of.int,aes(DaysFullEnt))+geom_density(fill="deeppink3") + xlab("Number of days it took the infant to achieve full enteral feeding") + theme_bw()
+
+```
+
+###Number of days the infant received parenteral nutrition
+#### Summary statistics
+```{r,echo = FALSE}
+df.of.int <- dat[!duplicated(dat$SubjtID),]
+
+summary(df.of.int$DaysonPN)
+
+```
+
+#### Density plot
+```{r,echo = FALSE}
+ggplot(df.of.int,aes(DaysonPN))+geom_density(fill="deeppink3") + xlab("Number of days the infant received parenteral nutrition") + theme_bw()
+
+```
+
+###Severe retinopathy of prematurity
+```{r,echo=FALSE}
+var.name = "ROP"
+var.label = "Severe retinopathy of prematurity"
+# summary(dat[,var.name])
+```
+
+####n samples
+```{r,echo=FALSE}
+barplot.n.table <- merged.stat.list.ordered$n[merged.stat.list.ordered$Variable.Label == var.label]
+names(barplot.n.table) <- merged.stat.list.ordered$Day.of.Life[merged.stat.list.ordered$Variable.Label == var.label]
+
+barplot(barplot.n.table,xlab="Days of Life",ylab="n samples",col='darkorchid4')
+```
+
+####dynamic barplot
+```{r,echo=FALSE}
+df <- data.frame(apply(dat,2,function(x)trimws(x,"both")))
+df.of.int <- df[,var.name]
+
+tbl = round(table(df.of.int)/sum(table(df.of.int)),digits = 2)
+
+dyn.barplot.df <- data.frame(matrix(ncol=4,nrow=0))
+names(dyn.barplot.df) <- c("Var","DOL","Value","Count")
+
+k=1
+dol.tbls <- t(unlist(sapply(1:max(as.numeric(df$DOL)),function(j)table(df[df$DOL == j,var.name]))))
+dol.tbls <- dol.tbls[,colnames(dol.tbls) != ""]
+
+var.dol.df <- data.frame(matrix(ncol = 4,nrow=0))
+names(var.dol.df) <- c("Var","DOL","Value","Count")
+for(j in 1:ncol(dol.tbls)){
+  mydf <- data.frame(cbind(var.label,1:nrow(dol.tbls),rep(colnames(dol.tbls)[j],nrow(dol.tbls)),dol.tbls[,j]))
+  names(mydf) <- c("Var","DOL","Value","Count")
+  var.dol.df <- rbind(var.dol.df,mydf)
+}
+dyn.barplot.df <- rbind(dyn.barplot.df,var.dol.df)
+var.dol.df$Count <- as.numeric(as.character(var.dol.df$Count))
+var.dol.df$DOL  <- factor(var.dol.df$DOL,levels = unique(var.dol.df$DOL)[order(as.numeric(as.character(unique(var.dol.df$DOL))))])
+(myplot <- ggplot(data = var.dol.df,aes(x = DOL,y = Count)) + geom_bar(stat = "identity", aes(fill = Value)) + ggtitle(label = gsub(x = var.label,pattern = ";",replacement = "\n")))
+
+```
+
+###Score for Neonatal Acute Physiology II
+#### Summary statistics
+```{r,echo = FALSE}
+df.of.int <- dat[!duplicated(dat$SubjtID),]
+
+summary(df.of.int$SNAP)
+```
+
+#### Density plot
+```{r,echo = FALSE}
+ggplot(df.of.int,aes(SNAP))+geom_density(fill="deeppink3") + xlab("Score for Neonatal Acute Physiology II") + theme_bw()
+
+```
